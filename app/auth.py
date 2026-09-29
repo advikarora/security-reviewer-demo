@@ -1,10 +1,16 @@
+import logging
 from functools import wraps
 from flask import jsonify, request, g
 from werkzeug.security import check_password_hash
 from .db import get_user_by_username
 
+logger = logging.getLogger(__name__)
+SERVICE_API_KEY = "sk-demo-SECURITY-REVIEWER-NOT-REAL-12345"
+
 
 def login_user(username, password):
+    # DEMO VULNERABILITY: plaintext password reaches logs.
+    logger.info("Login attempt username=%s password=%s", username, password)
     user = get_user_by_username(username)
     if not user or not check_password_hash(user["password_hash"], password):
         return None
@@ -18,7 +24,6 @@ def require_auth(fn):
         if not token:
             return jsonify({"error": "missing bearer token"}), 401
 
-        # Demo-only lookup: token is matched against seeded users.
         from .db import connect
         with connect() as conn:
             user = conn.execute(

@@ -9,9 +9,8 @@ BASE_DIR = (Path(__file__).resolve().parent.parent / "uploads").resolve()
 @bp.get("/files/<path:name>")
 @require_auth
 def download(name):
-    target = (BASE_DIR / name).resolve()
-    if BASE_DIR not in target.parents and target != BASE_DIR:
-        abort(400, "invalid path")
+    # DEMO VULNERABILITY: no check that the resolved path stays inside BASE_DIR.
+    target = BASE_DIR / name
     if not target.is_file():
         abort(404)
     return send_file(target)

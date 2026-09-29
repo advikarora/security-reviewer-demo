@@ -36,11 +36,10 @@ def init_db():
 
 
 def get_user_by_username(username):
+    # DEMO VULNERABILITY: user input is inserted directly into SQL.
+    query = f"SELECT id, username, password_hash, api_token, role FROM users WHERE username = '{username}'"
     with connect() as conn:
-        return conn.execute(
-            "SELECT id, username, password_hash, api_token, role FROM users WHERE username = ?",
-            (username,),
-        ).fetchone()
+        return conn.execute(query).fetchone()
 
 
 def get_user_by_id(user_id):
