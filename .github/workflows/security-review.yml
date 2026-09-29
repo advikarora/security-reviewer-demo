@@ -13,9 +13,23 @@ jobs:
   review:
     if: >-
       github.event.issue.pull_request &&
-      contains(github.event.comment.body, '@security-reviewer review')
+      contains(github.event.comment.body, '@bandwidth-security-reviewer review')
+
     runs-on: ubuntu-latest
+
     steps:
+      - name: React with eyes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/$REPO/issues/comments/$COMMENT_ID/reactions" \
+            -f content='eyes'
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
@@ -35,3 +49,16 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: python .github/security-reviewer/review.py
+
+      - name: React with rocket
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/$REPO/issues/comments/$COMMENT_ID/reactions" \
+            -f content='rocket'
